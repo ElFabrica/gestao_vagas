@@ -20,4 +20,3 @@ public class CreateCandidateUseCase {
         return this.candidateRepository.save(candidateEntity);
     }
 }
-

@@ -1,9 +1,6 @@
 package com.example.gestao_vagas.candidate.controllers;
 
-
-import com.example.gestao_vagas.candidate.exceptions.UserFoundException;
 import com.example.gestao_vagas.candidate.CandidateEntity;
-import com.example.gestao_vagas.candidate.CandidateRepository;
 import com.example.gestao_vagas.candidate.useCases.CreateCandidateUseCase;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
