@@ -1,8 +1,8 @@
-package com.example.gestao_vagas.candidate.useCases;
+package com.example.gestao_vagas.modules.candidate.useCases;
 
-import com.example.gestao_vagas.candidate.CandidateEntity;
-import com.example.gestao_vagas.candidate.CandidateRepository;
-import com.example.gestao_vagas.candidate.exceptions.UserFoundException;
+import com.example.gestao_vagas.modules.candidate.CandidateEntity;
+import com.example.gestao_vagas.modules.candidate.CandidateRepository;
+import com.example.gestao_vagas.modules.candidate.exceptions.UserFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

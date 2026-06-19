@@ -1,4 +1,4 @@
-package com.example.gestao_vagas.candidate;
+package com.example.gestao_vagas.modules.candidate;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

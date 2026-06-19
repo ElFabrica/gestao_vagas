@@ -1,4 +1,4 @@
-package com.example.gestao_vagas.candidate.exceptions;
+package com.example.gestao_vagas.modules.candidate.exceptions;
 
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;

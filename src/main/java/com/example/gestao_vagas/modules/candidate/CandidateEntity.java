@@ -1,4 +1,4 @@
-package com.example.gestao_vagas.candidate;
+package com.example.gestao_vagas.modules.candidate;
 
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -32,6 +32,7 @@ public class CandidateEntity {
 
     @Length(min = 10, max = 100)
     private String password;
+
     private String description;
     private String curriculum;
 

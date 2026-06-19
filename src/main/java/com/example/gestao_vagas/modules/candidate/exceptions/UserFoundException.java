@@ -1,4 +1,4 @@
-package com.example.gestao_vagas.candidate.exceptions;
+package com.example.gestao_vagas.modules.candidate.exceptions;
 
 public class UserFoundException extends RuntimeException {
     public UserFoundException(){
