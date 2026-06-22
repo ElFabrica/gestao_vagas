@@ -27,7 +27,6 @@ public class SecurityFilter extends OncePerRequestFilter {
         FilterChain filterChain)
             throws ServletException, IOException {
         String header = request.getHeader("Authorization");
-        System.out.println(header);
 
         if(header != null) {
             var subjectToken = this.jwtProviders.validateToken(header);
