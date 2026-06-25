@@ -16,9 +16,9 @@ public class SwaggerConfig {
         return new OpenAPI()
                 .info(new Info().title("Gestão de vagas").description("API Responsável pela gestão de vagas")
                         .version("1"))
-                .schemaRequirement("jwt_auth", createSecutiryScheme());
+                .schemaRequirement("jwt_auth", createSecurityScheme());
     }
-    private SecurityScheme createSecutiryScheme(){
+    private SecurityScheme createSecurityScheme(){
         return new SecurityScheme().name("jwt_auth").type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("JWY");
     }
 }

@@ -23,5 +23,4 @@ public class ProfileCandidateResponseDTO {
     private UUID id;
     @Schema(example = "Maria")
     private String name;
-
 }
