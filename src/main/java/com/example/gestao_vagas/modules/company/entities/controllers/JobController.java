@@ -25,6 +25,8 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/company/job")
+@Tag(name = "Company", description = "Informações da company")
+
 public class JobController {
 
     @Autowired

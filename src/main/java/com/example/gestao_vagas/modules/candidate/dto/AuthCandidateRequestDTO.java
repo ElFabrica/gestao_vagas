@@ -1,6 +1,8 @@
 package com.example.gestao_vagas.modules.candidate.dto;
 
-public record AuthCandidateRequestDTO(String username, String password) {
+import io.swagger.v3.oas.annotations.media.Schema;
+
+public record AuthCandidateRequestDTO(@Schema(example = "ElFabrica") String username, @Schema(example = "Fala12345@") String password) {
 
 
 
