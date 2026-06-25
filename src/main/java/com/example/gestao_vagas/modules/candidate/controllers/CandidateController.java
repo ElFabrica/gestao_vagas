@@ -1,6 +1,7 @@
 package com.example.gestao_vagas.modules.candidate.controllers;
 
 import com.example.gestao_vagas.modules.candidate.CandidateEntity;
+import com.example.gestao_vagas.modules.candidate.dto.ProfileCandidateResponseDTO;
 import com.example.gestao_vagas.modules.candidate.useCases.CreateCandidateUseCase;
 import com.example.gestao_vagas.modules.candidate.useCases.ListAllJobsByFilterUseCase;
 import com.example.gestao_vagas.modules.candidate.useCases.ProfileCandidateUseCase;
@@ -47,6 +48,15 @@ public class CandidateController {
 
     @GetMapping("/")
     @PreAuthorize("hasRole('CANDIDATE')")
+    @Tag(name="Candidato", description = "Informações do candidato")
+    @Operation(summary = "Perfil do Candidato",
+            description = "Essa função é responsável por buscar as informações do perfil do candidato")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", content = {
+                    @Content(schema = @Schema(implementation = ProfileCandidateResponseDTO.class))}),
+    @ApiResponse(responseCode = "400", description = "User not found")
+    })
+    @SecurityRequirement(name = "jwt_auth")
     public ResponseEntity<Object>get(HttpServletRequest request){
 
         var idCandidate = request.getAttribute("candidate_id");
@@ -58,6 +68,8 @@ public class CandidateController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+
 
     @GetMapping("/job")
     @PreAuthorize("hasRole('CANDIDATE')")
