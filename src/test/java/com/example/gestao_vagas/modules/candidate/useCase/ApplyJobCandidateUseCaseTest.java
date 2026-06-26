@@ -6,7 +6,6 @@ import com.example.gestao_vagas.modules.candidate.exceptions.JobNotFoundExceptio
 import com.example.gestao_vagas.modules.candidate.exceptions.UserNotFoundException;
 import com.example.gestao_vagas.modules.candidate.useCases.ApplyJobCandidateUseCase;
 import com.example.gestao_vagas.modules.company.entities.repositories.JobRepository;
-import org.hibernate.mapping.Any;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

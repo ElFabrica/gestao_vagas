@@ -3,6 +3,7 @@ package com.example.gestao_vagas.modules.candidate.useCases;
 import com.example.gestao_vagas.modules.candidate.CandidateRepository;
 import com.example.gestao_vagas.modules.candidate.exceptions.JobNotFoundException;
 import com.example.gestao_vagas.modules.candidate.exceptions.UserNotFoundException;
+import com.example.gestao_vagas.modules.candidate.repository.ApplyJobRepository;
 import com.example.gestao_vagas.modules.company.entities.repositories.JobRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -16,6 +17,9 @@ public class ApplyJobCandidateUseCase {
     @Autowired
     private JobRepository jobRepository;
 
+    @Autowired
+    private ApplyJobRepository applyJobRepository;
+
     public void execute(UUID idCandidate, UUID idJob){
 
         this.candidateRepository.findById(idCandidate)
@@ -27,7 +31,5 @@ public class ApplyJobCandidateUseCase {
                 .orElseThrow(()->{
                     throw new JobNotFoundException();
                 });
-        
-
     }
 }
