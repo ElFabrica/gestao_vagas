@@ -33,7 +33,7 @@ public class ApplyJobEntity {
 
     private UUID candidateId;
 
-    private UUID jubId;
+    private UUID jobId;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
