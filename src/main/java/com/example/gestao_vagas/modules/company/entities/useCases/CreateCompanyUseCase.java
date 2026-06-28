@@ -1,6 +1,6 @@
 package com.example.gestao_vagas.modules.company.entities.useCases;
 
-import com.example.gestao_vagas.modules.candidate.exceptions.UserFoundException;
+import com.example.gestao_vagas.exceptions.CompanyNotFoundException;
 import com.example.gestao_vagas.modules.company.entities.CompanyEntity;
 import com.example.gestao_vagas.modules.company.entities.repositories.CompanyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,7 @@ public class CreateCompanyUseCase {
         this.companyRepository
                 .findByUsernameOrEmail(companyEntity.getUsername(), companyEntity.getEmail())
                 .ifPresent((user)->{
-            throw new UserFoundException();
+            throw new CompanyNotFoundException.UserFoundException();
         });
 
         var password = passwordEncoder.encode(companyEntity.getPassword());

@@ -1,10 +1,9 @@
 package com.example.gestao_vagas.modules.candidate.useCase;
 
+import com.example.gestao_vagas.exceptions.CompanyNotFoundException;
 import com.example.gestao_vagas.modules.candidate.CandidateEntity;
 import com.example.gestao_vagas.modules.candidate.CandidateRepository;
 import com.example.gestao_vagas.modules.candidate.entity.ApplyJobEntity;
-import com.example.gestao_vagas.modules.candidate.exceptions.JobNotFoundException;
-import com.example.gestao_vagas.modules.candidate.exceptions.UserNotFoundException;
 import com.example.gestao_vagas.modules.candidate.repository.ApplyJobRepository;
 import com.example.gestao_vagas.modules.candidate.useCases.ApplyJobCandidateUseCase;
 import com.example.gestao_vagas.modules.company.entities.JobEntity;
@@ -45,7 +44,7 @@ public class ApplyJobCandidateUseCaseTest {
         try {
             applyJobCandidateUseCase.execute(null, null);
         } catch (Exception e){
-            assertThat(e).isInstanceOf(UserNotFoundException.class);
+            assertThat(e).isInstanceOf(CompanyNotFoundException.UserNotFoundException.class);
         }
     }
 
@@ -60,7 +59,7 @@ public class ApplyJobCandidateUseCaseTest {
             applyJobCandidateUseCase.execute(idCandidate, null);
 
         }catch (Exception e){
-            assertThat(e).isInstanceOf(JobNotFoundException.class);
+            assertThat(e).isInstanceOf(CompanyNotFoundException.JobNotFoundException.class);
         }
     }
 

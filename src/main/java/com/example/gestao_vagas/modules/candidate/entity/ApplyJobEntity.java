@@ -25,14 +25,16 @@ public class ApplyJobEntity {
 
     @ManyToOne
     @JoinColumn(name = "candidate_id", insertable = false, updatable = false)
-    private CandidateEntity candidate;
+    private CandidateEntity candidateEntity;
 
     @ManyToOne
-    @JoinColumn(name = "Job_id", insertable = false, updatable = false)
+    @JoinColumn(name = "job_id", insertable = false, updatable = false)
     private JobEntity jobEntity;
 
+    @Column(name = "candidate_id")
     private UUID candidateId;
 
+    @Column(name = "job_id")
     private UUID jobId;
 
     @CreationTimestamp

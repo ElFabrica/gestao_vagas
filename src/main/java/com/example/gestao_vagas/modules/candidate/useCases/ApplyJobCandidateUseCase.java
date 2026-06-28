@@ -1,15 +1,16 @@
 package com.example.gestao_vagas.modules.candidate.useCases;
 
+import com.example.gestao_vagas.exceptions.CompanyNotFoundException;
 import com.example.gestao_vagas.modules.candidate.CandidateRepository;
 import com.example.gestao_vagas.modules.candidate.entity.ApplyJobEntity;
-import com.example.gestao_vagas.modules.candidate.exceptions.JobNotFoundException;
-import com.example.gestao_vagas.modules.candidate.exceptions.UserNotFoundException;
 import com.example.gestao_vagas.modules.candidate.repository.ApplyJobRepository;
 import com.example.gestao_vagas.modules.company.entities.repositories.JobRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+@Service
 public class ApplyJobCandidateUseCase {
 
     @Autowired
@@ -25,12 +26,12 @@ public class ApplyJobCandidateUseCase {
 
         this.candidateRepository.findById(idCandidate)
                 .orElseThrow(()->{
-                    throw new UserNotFoundException();
+                    throw new CompanyNotFoundException.UserNotFoundException();
                 });
 
         this.jobRepository.findById(idJob)
                 .orElseThrow(()->{
-                    throw new JobNotFoundException();
+                    throw new CompanyNotFoundException.JobNotFoundException();
                 });
 
         var applyJob = ApplyJobEntity.builder()
