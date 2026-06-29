@@ -14,18 +14,16 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private SecurityCandidateFilter securityCandidateFilter;
-
-    @Autowired
-    private SecurityFilter securityFilter;
-
     private static final String[] SWAGGER_LIST = {
             "/swagger-ui/**",
             "/swagger-ui.html/**",
             "/v3/api-docs/**",
             "/swagger-resources/**"
     };
+    @Autowired
+    private SecurityCandidateFilter securityCandidateFilter;
+    @Autowired
+    private SecurityCompanyFilter securityCompanyFilter;
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http){
@@ -41,7 +39,7 @@ public class SecurityConfig {
                     auth.anyRequest().authenticated();
                 })
                 .addFilterBefore(securityCandidateFilter, BasicAuthenticationFilter.class)
-                .addFilterBefore(securityFilter, BasicAuthenticationFilter.class)
+                .addFilterBefore(securityCompanyFilter, BasicAuthenticationFilter.class)
 
         ;
         return http.build();

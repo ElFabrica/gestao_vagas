@@ -60,9 +60,7 @@ public class CompanyNotFoundException extends RuntimeException {
         }
     }
 
-    public static class UserNotFoundException extends RuntimeException {
-        public UserNotFoundException(){
-            super("User not found");
-        }
-    }
+
+
+
 }

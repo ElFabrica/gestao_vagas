@@ -1,6 +1,7 @@
 package com.example.gestao_vagas.modules.candidate.useCases;
 
 import com.example.gestao_vagas.exceptions.CompanyNotFoundException;
+import com.example.gestao_vagas.exceptions.UserNotFoundException;
 import com.example.gestao_vagas.modules.candidate.CandidateRepository;
 import com.example.gestao_vagas.modules.candidate.entity.ApplyJobEntity;
 import com.example.gestao_vagas.modules.candidate.repository.ApplyJobRepository;
@@ -26,7 +27,7 @@ public class ApplyJobCandidateUseCase {
 
         this.candidateRepository.findById(idCandidate)
                 .orElseThrow(()->{
-                    throw new CompanyNotFoundException.UserNotFoundException();
+                    throw new UserNotFoundException();
                 });
 
         this.jobRepository.findById(idJob)

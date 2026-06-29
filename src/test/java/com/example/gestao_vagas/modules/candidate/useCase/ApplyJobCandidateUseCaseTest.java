@@ -1,6 +1,7 @@
 package com.example.gestao_vagas.modules.candidate.useCase;
 
 import com.example.gestao_vagas.exceptions.CompanyNotFoundException;
+import com.example.gestao_vagas.exceptions.UserNotFoundException;
 import com.example.gestao_vagas.modules.candidate.CandidateEntity;
 import com.example.gestao_vagas.modules.candidate.CandidateRepository;
 import com.example.gestao_vagas.modules.candidate.entity.ApplyJobEntity;
@@ -44,7 +45,7 @@ public class ApplyJobCandidateUseCaseTest {
         try {
             applyJobCandidateUseCase.execute(null, null);
         } catch (Exception e){
-            assertThat(e).isInstanceOf(CompanyNotFoundException.UserNotFoundException.class);
+            assertThat(e).isInstanceOf(UserNotFoundException.class);
         }
     }
 
