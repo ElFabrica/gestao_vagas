@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name="Autenticar candidato", description = "Autenticação do usuário de tipo candidato")
 public class AuthCandidateController {
 
-    private AuthCandidateUseCase authCandidateUseCase;
+    private final AuthCandidateUseCase authCandidateUseCase;
 
     public AuthCandidateController(AuthCandidateUseCase authCandidateUseCase) {
         this.authCandidateUseCase = authCandidateUseCase;

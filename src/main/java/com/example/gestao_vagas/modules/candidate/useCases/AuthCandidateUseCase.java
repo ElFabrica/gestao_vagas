@@ -20,7 +20,7 @@ import java.util.Arrays;
 @Service
 public class AuthCandidateUseCase {
 
-    @Value("${secutiry.token.secret.candidate}")
+    @Value("${security.token.secret.candidate}")
     private String secretKey;
 
     @Autowired

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class JWTCandidateProvider {
 
-    @Value("${secutiry.token.secret.candidate}")
+    @Value("${security.token.secret.candidate}")
     private String secretKey;
 
     public DecodedJWT validateToken(String token){
