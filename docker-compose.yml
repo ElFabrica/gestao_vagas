@@ -1,12 +1,30 @@
-version: "3.8"
+networks:
+  gv-network:
+    driver: bridge
+
+volumes:
+  prometheus_data:
 
 services:
   postgres:
     container_name: vagas-db
     image: postgres
     ports:
-      - 5432:5432
+      - "5432:5432"
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=gestao_vagas
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: gestao_vagas
+    networks:
+      - gv-network
+
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:latest
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - gv-network
