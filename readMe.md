@@ -129,5 +129,3 @@ java -jar target/gestao_vagas-0.0.1-SNAPSHOT.jar
 Esta documentação visa facilitar a compreensão e o setup do projeto `gestao_vagas`. Para mais detalhes sobre a implementação, consulte o código-fonte nos respectivos módulos.
 
 ---
-
-**Autor**: Manus AI
