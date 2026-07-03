@@ -4,6 +4,7 @@ networks:
 
 volumes:
   prometheus_data:
+  grafana_data:
 
 services:
   postgres:
@@ -21,10 +22,19 @@ services:
   prometheus:
     container_name: prometheus
     image: prom/prometheus:latest
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
+    networks:
+      - gv-network
     ports:
       - "9090:9090"
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:latest
+    ports:
+      - 3000:3000
     networks:
       - gv-network
