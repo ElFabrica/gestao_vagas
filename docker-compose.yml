@@ -38,3 +38,7 @@ services:
       - 3000:3000
     networks:
       - gv-network
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./config/grafana/provisioning:/etc/grafana/provisioning
+      - ./config/grafana/dashboards:/var/lib/grafana/dashboards
