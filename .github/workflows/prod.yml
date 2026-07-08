@@ -23,4 +23,13 @@ jobs:
         run: docker build -t elfabrica/gestao_vagas .
       - name: Publish image
         run: docker push elfabrica/gestao_vagas
-
+  deploy:
+    needs: build
+    runs-on: self-hosted
+    steps:
+      - name: Pull image docker hub
+        run: docker pull elfabrica/gestao_vagas
+      - name: remove container
+        run: docker rm -f
+      - name: Run docker container
+        run: docker run -d -p 8080:8080 -e DATABASE_URL=${{secrets.DATABASE_URL}} -e DATABASE_PASSWORD=${{secrets.DATABASE_USERNAME}} -e DATABASE_USERNAME=${{secrets.DATABASE_USERNAME}} --name gestao-vagas elfabrica/gestao_vagas
