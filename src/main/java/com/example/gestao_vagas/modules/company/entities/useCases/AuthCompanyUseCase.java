@@ -29,14 +29,14 @@ public class AuthCompanyUseCase {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public AuthCompanyResponseDTO execute(AuthCompanyDTO authCompanyDTO){
+    public AuthCompanyResponseDTO execute(AuthCompanyDTO authCompanyDTO) {
         var company = this.companyRepository.findByUsername(authCompanyDTO.getUsername()).orElseThrow(
                 () -> {
                     throw new UsernameNotFoundException("Company not found");
                 });
         var passwordMatchers = this.passwordEncoder.matches(authCompanyDTO.getPassword(), company.getPassword());
 
-        if(!passwordMatchers){
+        if (!passwordMatchers) {
             throw new BadCredentialsException("Username ou senhas invalidas");
         }
 
@@ -48,13 +48,11 @@ public class AuthCompanyUseCase {
                 .withSubject(company.getId().toString())
                 .withExpiresAt(expiresIn)
                 .withClaim("roles", Arrays.asList("COMPANY"))
-                    .sign(algorithm);
+                .sign(algorithm);
 
-        var authCompanyResponseDTO = AuthCompanyResponseDTO.builder()
+        return AuthCompanyResponseDTO.builder()
                 .access_token(token)
                 .expires_in(expiresIn.toEpochMilli())
                 .build();
-
-        return authCompanyResponseDTO;
     }
 }
