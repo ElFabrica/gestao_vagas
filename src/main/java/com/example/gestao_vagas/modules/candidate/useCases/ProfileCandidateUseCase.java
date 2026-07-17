@@ -14,13 +14,13 @@ public class ProfileCandidateUseCase {
     @Autowired
     private CandidateRepository candidateRepository;
 
-    public ProfileCandidateResponseDTO execute(UUID idCandidate){
+    public ProfileCandidateResponseDTO execute(UUID idCandidate) {
         var candidate = this.candidateRepository.findById(idCandidate)
-                .orElseThrow(()->{
+                .orElseThrow(() -> {
                     throw new UserNotFoundException();
                 });
 
-        var candidateDTO = ProfileCandidateResponseDTO.builder()
+        return ProfileCandidateResponseDTO.builder()
                 .description(candidate.getDescription())
                 .username(candidate.getUsername())
                 .email(candidate.getEmail())
@@ -28,6 +28,5 @@ public class ProfileCandidateUseCase {
                 .id(candidate.getId())
                 .build();
 
-        return candidateDTO;
     }
 }
