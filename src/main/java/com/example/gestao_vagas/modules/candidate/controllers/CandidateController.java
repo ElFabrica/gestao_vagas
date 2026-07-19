@@ -25,8 +25,9 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/candidate")
-@Tag(name = "Candidato", description = "Informações do candidato")
+@Tag(name = "Candidato", description = "Endpoints responsáveis pelo gerenciamento de candidatos, perfil, vagas e candidaturas.")
 public class CandidateController {
+
     @Autowired
     UpdateCandidateUseCase updateCandidateUseCase;
 
@@ -46,14 +47,24 @@ public class CandidateController {
     private DeleteCandidateUseCase deleteCandidateUseCase;
 
     @PostMapping("/")
-    @Operation(summary = "Cadastro de Candidato",
-            description = "Essa função é responsável por cadastrar o candidato.")
+    @Operation(
+            summary = "Cadastrar candidato",
+            description = "Realiza o cadastro de um novo candidato no sistema."
+    )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", content = {
-                    @Content(schema = @Schema(implementation = CandidateEntity.class))}),
-            @ApiResponse(responseCode = "400", description = "Usuário já existe")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Candidato cadastrado com sucesso.",
+                    content = @Content(schema = @Schema(implementation = CandidateEntity.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Dados inválidos ou usuário já cadastrado."
+            )
     })
-    public ResponseEntity<Object> create(@Valid @RequestBody CandidateEntity candidateEntity) {
+    public ResponseEntity<Object> create(
+            @Valid @RequestBody CandidateEntity candidateEntity) {
+
         try {
             var result = this.createCandidateUseCase.execute(candidateEntity);
             return ResponseEntity.ok().body(result);
@@ -63,7 +74,20 @@ public class CandidateController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Object> update(@PathVariable String id, @Valid @RequestBody UpdateCandidateDTO updateCandidateDTO) {
+    @Operation(
+            summary = "Atualizar candidato",
+            description = "Atualiza as informações de um candidato através do seu identificador."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Candidato atualizado com sucesso."),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos ou candidato não encontrado.")
+    })
+    @SecurityRequirement(name = "jwt_auth")
+    @PreAuthorize("hasRole('CANDIDATE')")
+    public ResponseEntity<Object> update(
+            @PathVariable String id,
+            @Valid @RequestBody UpdateCandidateDTO updateCandidateDTO) {
+
         try {
             this.updateCandidateUseCase.execute(updateCandidateDTO, UUID.fromString(id));
             return ResponseEntity.ok().body("");
@@ -74,14 +98,26 @@ public class CandidateController {
 
     @GetMapping("/")
     @PreAuthorize("hasRole('CANDIDATE')")
-    @Operation(summary = "Perfil do Candidato",
-            description = "Essa função é responsável por buscar as informações do perfil do candidato")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", content = {
-                    @Content(schema = @Schema(implementation = ProfileCandidateResponseDTO.class))}),
-            @ApiResponse(responseCode = "400", description = "User not found")
-    })
     @SecurityRequirement(name = "jwt_auth")
+    @Operation(
+            summary = "Consultar perfil",
+            description = "Retorna as informações do candidato autenticado."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Perfil encontrado.",
+                    content = @Content(schema = @Schema(implementation = ProfileCandidateResponseDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Candidato não encontrado."
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Token JWT inválido ou expirado."
+            )
+    })
     public ResponseEntity<Object> get(HttpServletRequest request) {
 
         var idCandidate = request.getAttribute("candidate_id");
@@ -94,48 +130,100 @@ public class CandidateController {
         }
     }
 
-
     @GetMapping("/job")
     @PreAuthorize("hasRole('CANDIDATE')")
-    @Operation(summary = "Listagem de vagas disponíveis para candidato",
-            description = "Esta função é responsável por listar todas as  disponíveis, baseada no filtro")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", content = {
-                    @Content(array = @ArraySchema(schema = @Schema(
-                            implementation = JobEntity.class
-                    )))})})
     @SecurityRequirement(name = "jwt_auth")
-    public List<JobEntity> findJobByFilter(@RequestParam String filter) {
+    @Operation(
+            summary = "Listar vagas",
+            description = "Lista todas as vagas disponíveis de acordo com o filtro informado."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Lista de vagas retornada com sucesso.",
+                    content = @Content(array = @ArraySchema(
+                            schema = @Schema(implementation = JobEntity.class)
+                    ))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Usuário não autenticado."
+            )
+    })
+    public List<JobEntity> findJobByFilter(
+            @RequestParam String filter) {
+
         return this.listAllJobsByFilterUseCase.execute(filter);
     }
 
     @PostMapping("/job/apply")
     @PreAuthorize("hasRole('CANDIDATE')")
     @SecurityRequirement(name = "jwt_auth")
-    @Operation(summary = "Inscrição do candidato para uma vaga",
-
-            description = "Essa função é responsável por realizar a inscrição do candidato em uma vaga."
+    @Operation(
+            summary = "Candidatar-se a uma vaga",
+            description = "Permite que o candidato autenticado realize a inscrição em uma vaga."
     )
-    public ResponseEntity<Object> applyJob(HttpServletRequest request, @RequestBody UUID jobId) {
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Inscrição realizada com sucesso."
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Erro ao realizar a candidatura."
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Usuário não autenticado."
+            )
+    })
+    public ResponseEntity<Object> applyJob(
+            HttpServletRequest request,
+            @RequestBody UUID jobId) {
+
         var candidateId = request.getAttribute("candidate_id");
+
         try {
-            var result = this.applApplyJobCandidateUseCase.execute(UUID.fromString(candidateId.toString()), jobId);
+            var result = this.applApplyJobCandidateUseCase.execute(
+                    UUID.fromString(candidateId.toString()),
+                    jobId);
 
             return ResponseEntity.ok().body(result);
+
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
-
         }
     }
 
     @DeleteMapping("/")
     @PreAuthorize("hasRole('CANDIDATE')")
     @SecurityRequirement(name = "jwt_auth")
+    @Operation(
+            summary = "Excluir conta",
+            description = "Remove permanentemente a conta do candidato autenticado."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "203",
+                    description = "Conta removida com sucesso."
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Erro ao remover a conta."
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Usuário não autenticado."
+            )
+    })
     public ResponseEntity<Object> delete(HttpServletRequest request) {
+
         var candidateId = request.getAttribute("candidate_id");
+
         try {
             this.deleteCandidateUseCase.delete(UUID.fromString(candidateId.toString()));
             return ResponseEntity.status(203).body("");
+
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
