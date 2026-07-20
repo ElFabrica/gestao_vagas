@@ -16,8 +16,8 @@ public class CreateJobUseCase {
     @Autowired
     private CompanyRepository companyRepository;
 
-    public JobEntity execute(JobEntity jobEntity){
-        companyRepository.findById(jobEntity.getId()).orElseThrow(()->{
+    public JobEntity execute(JobEntity jobEntity) {
+        companyRepository.findById(jobEntity.getCompanyId()).orElseThrow(() -> {
             throw new CompanyNotFoundException();
         });
         return this.jobRepository.save(jobEntity);
