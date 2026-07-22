@@ -34,10 +34,22 @@ services:
     networks:
       - gv-network
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
       interval: 10s
       timeout: 5s
       retries: 5
+
+  rabbitmq:
+    container_name: vagas-rabbitmq
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT:PASS: guest
+    networks:
+      - gv-network
 
   prometheus:
     container_name: prometheus

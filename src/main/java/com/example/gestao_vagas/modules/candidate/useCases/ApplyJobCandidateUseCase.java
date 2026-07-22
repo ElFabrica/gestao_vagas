@@ -3,7 +3,9 @@ package com.example.gestao_vagas.modules.candidate.useCases;
 import com.example.gestao_vagas.exceptions.CompanyNotFoundException;
 import com.example.gestao_vagas.exceptions.UserNotFoundException;
 import com.example.gestao_vagas.modules.candidate.CandidateRepository;
+import com.example.gestao_vagas.modules.candidate.dto.ApplyJobEmailMessageDTO;
 import com.example.gestao_vagas.modules.candidate.entity.ApplyJobEntity;
+import com.example.gestao_vagas.modules.candidate.producers.ApplyJobEmailProducer;
 import com.example.gestao_vagas.modules.candidate.repository.ApplyJobRepository;
 import com.example.gestao_vagas.modules.company.entities.repositories.JobRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,23 +25,41 @@ public class ApplyJobCandidateUseCase {
     @Autowired
     private ApplyJobRepository applyJobRepository;
 
-    public ApplyJobEntity execute(UUID idCandidate, UUID idJob){
+    @Autowired
+    private ApplyJobEmailProducer applyJobEmailProducer;
 
-        this.candidateRepository.findById(idCandidate)
-                .orElseThrow(()->{
+    public ApplyJobEntity execute(UUID idCandidate, UUID idJob) {
+
+        var candidate = this.candidateRepository.findById(idCandidate)
+                .orElseThrow(() -> {
                     throw new UserNotFoundException();
                 });
 
-        this.jobRepository.findById(idJob)
-                .orElseThrow(()->{
+
+        var job = this.jobRepository.findById(idJob)
+                .orElseThrow(() -> {
                     throw new CompanyNotFoundException.JobNotFoundException();
                 });
+
 
         var applyJob = ApplyJobEntity.builder()
                 .candidateId(idCandidate)
                 .jobId(idJob)
                 .build();
-        applyJob =  applyJobRepository.save(applyJob);
+        applyJob = applyJobRepository.save(applyJob);
+
+        var company = job.getCompanyEntity();
+
+        this.applyJobEmailProducer.send(new ApplyJobEmailMessageDTO(
+                candidate.getId(),
+                candidate.getName(),
+                candidate.getEmail(),
+                job.getId(),
+                job.getDescription(),
+                company.getName(),
+                company.getEmail()
+        ));
+
         return applyJob;
     }
 }
