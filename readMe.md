@@ -1,159 +1,225 @@
-# Gestão de Vagas - Documentação do Projeto
+# Gestão de Vagas
 
-Este documento fornece uma visão geral da aplicação **Gestão de Vagas**, suas tecnologias, estrutura e os comandos necessários para configurar e executar o ambiente de desenvolvimento.
+API REST em Java/Spring Boot para gestão de vagas de emprego, com autenticação JWT separada para **candidatos** e **empresas**, envio assíncrono de e-mails via RabbitMQ, logs de acesso em MongoDB e observabilidade com Prometheus/Grafana.
 
-## 1. Introdução
+## Funcionalidades
 
-A aplicação **Gestão de Vagas** é um sistema desenvolvido em Java com Spring Boot, projetado para gerenciar vagas de emprego. Ele oferece funcionalidades para empresas e candidatos, utilizando um banco de dados PostgreSQL e segurança baseada em JWT.
+- Cadastro e autenticação de candidatos e empresas (JWT)
+- CRUD de empresas e candidatos
+- Criação de vagas pela empresa
+- Listagem de vagas com filtro e candidatura
+- E-mail assíncrono ao candidatar-se (candidato + empresa), com retry e DLQ
+- Logs HTTP em MongoDB
+- Métricas via Actuator + Prometheus + Grafana
+- Documentação OpenAPI (Swagger)
 
-## 2. Tecnologias Utilizadas
+## Stack
 
-O projeto `gestao_vagas` é construído com as seguintes tecnologias principais, conforme identificado no arquivo `pom.xml`:
+| Tecnologia | Uso |
+|---|---|
+| Java 17 / Spring Boot 4.1 | API |
+| Spring Data JPA + PostgreSQL | Domínio (candidatos, empresas, vagas, candidaturas) |
+| MongoDB | Logs de acesso HTTP |
+| RabbitMQ | Fila de e-mails + DLQ |
+| JavaMail (SMTP) | Envio de e-mails |
+| Spring Security + Auth0 JWT | Autenticação/autorização |
+| SpringDoc OpenAPI | Swagger UI |
+| Actuator / Micrometer / Prometheus / Grafana | Observabilidade |
+| Maven Wrapper (`./mvnw`) | Build e testes |
+| Docker Compose | Infra local |
 
-*   **Java 17**: Linguagem de programação.
-*   **Spring Boot**: Framework para construção de aplicações Java robustas e escaláveis.
-*   **Spring Boot Starter WebMVC**: Para construção de APIs RESTful.
-*   **Spring Boot Starter Data JPA**: Para persistência de dados com JPA e Hibernate.
-*   **PostgreSQL**: Banco de dados relacional.
-*   **Lombok**: Biblioteca para reduzir código boilerplate.
-*   **Spring Security**: Para autenticação e autorização.
-*   **Java JWT (auth0)**: Para implementação de JSON Web Tokens.
-*   **SpringDoc OpenAPI UI**: Para geração automática de documentação de API (Swagger/OpenAPI).
-*   **Maven**: Ferramenta de automação de build e gerenciamento de dependências.
-*   **Docker Compose**: Para orquestração de contêineres (PostgreSQL e SonarQube).
-*   **SonarQube**: Ferramenta de análise de qualidade de código.
-
-## 3. Estrutura do Projeto
-
-A estrutura principal do código-fonte da aplicação está organizada da seguinte forma:
+## Estrutura do projeto
 
 ```
-src/
-├── main/
-│   ├── java/
-│   │   └── com/example/gestao_vagas/
-│   │       ├── config/        # Classes de configuração da aplicação
-│   │       ├── exceptions/    # Classes para tratamento de exceções personalizadas
-│   │       ├── modules/       # Módulos da aplicação (e.g., Company, Candidate, Job)
-│   │       ├── providers/     # Provedores de serviços (e.g., JWTProvider)
-│   │       ├── security/      # Configurações de segurança (Spring Security)
-│   │       └── GestaoDeVagas.java # Classe principal da aplicação Spring Boot
-│   └── resources/
-│       └── application.properties # Arquivo de configuração da aplicação
-└── test/
-    └── java/
-        └── com/example/gestao_vagas/
-            └── ... # Testes unitários e de integração
+src/main/java/com/example/gestao_vagas/
+├── GestaoDeVagas.java          # Entrypoint
+├── config/                     # Swagger, RabbitMQ, Mongo, filtros
+├── exceptions/
+├── providers/                  # JWT (candidato e empresa)
+├── security/                   # SecurityConfig + filtros JWT
+└── modules/
+    ├── candidate/              # Controllers, use cases, DTOs, producer, consumer
+    ├── company/entities/       # Controllers, use cases, Job, Company
+    └── logs/                   # Access logs (MongoDB)
+
+src/test/java/.../
+├── modules/candidate/useCases/
+├── modules/company/entities/useCases/
+└── modules/candidate/company/controllers/   # Teste de integração (MockMvc)
 ```
 
-## 4. Configuração e Execução do Ambiente
+## Pré-requisitos
 
-Para configurar e executar a aplicação, siga os passos abaixo:
+- JDK 17+
+- Docker e Docker Compose
+- Conta SMTP (ex.: Gmail com App Password) para e-mails
 
-### 4.1. Pré-requisitos
+## Setup rápido
 
-Certifique-se de ter as seguintes ferramentas instaladas:
-
-*   **Java Development Kit (JDK) 17** ou superior.
-*   **Maven**.
-*   **Docker** e **Docker Compose**.
-
-### 4.2. Banco de Dados (PostgreSQL) com Docker Compose
-
-O banco de dados PostgreSQL pode ser iniciado facilmente usando o Docker Compose. O arquivo `docker-compose.yml` define um serviço `postgres`.
-
-Para iniciar o banco de dados, navegue até a raiz do projeto e execute:
+### 1. Variáveis de ambiente
 
 ```bash
-docker-compose up -d
+cp .env.example .env
 ```
 
-Isso iniciará um contêiner PostgreSQL com as seguintes configurações:
+Edite o `.env` e preencha pelo menos `MAIL_USERNAME` e `MAIL_PASSWORD`.
 
-*   **Nome do contêiner**: `vagas-db`
-*   **Porta**: `5432` (mapeada para a porta `5432` do host)
-*   **Usuário**: `postgres`
-*   **Senha**: `postgres`
-*   **Banco de dados**: `gestao_vagas`
+Variáveis principais:
 
-### 4.3. SonarQube (Análise de Qualidade de Código)
+| Variável | Exemplo |
+|---|---|
+| `DATABASE_URL` | `jdbc:postgresql://localhost:5432/gestao_vagas` |
+| `DATABASE_USERNAME` / `DATABASE_PASSWORD` | `postgres` / `postgres` |
+| `MONGODB_*` | host `localhost`, user/pass `mongo`, DB `gestao_vagas_logs` |
+| `RABBITMQ_*` | host `localhost`, porta `5672`, user/pass `guest` |
+| `MAIL_HOST` / `MAIL_PORT` | `smtp.gmail.com` / `587` |
+| `MAIL_USERNAME` / `MAIL_PASSWORD` | credenciais SMTP |
 
-O projeto inclui comandos para integração com o SonarQube para análise de qualidade de código. Para iniciar o SonarQube e executar a análise, utilize os seguintes comandos:
-
-1.  **Iniciar o SonarQube (via Docker)**:
-
-    ```bash
-    docker run -d --name sonarqube -e SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true -p 9000:9000 sonarqube:9.9.0-community
-    ```
-
-2.  **Executar a análise com Maven**: (Certifique-se de que o SonarQube esteja rodando na porta `9000`)
-
-    ```bash
-    mvn clean verify sonar:sonar \
-      -Dsonar.projectKey=gestao_vagas \
-      -Dsonar.host.url=http://localhost:9000 \
-      -Dsonar.login=sqp_354026640f6580bdae9f5a1319be484daf13855b
-    ```
-
-    **Nota**: O token `sonar.login` (`sqp_354026640f6580bdae9f5a1319be484daf13855b`) é um exemplo e deve ser substituído por um token de autenticação válido do seu servidor SonarQube, caso o projeto seja configurado em um ambiente real.
-
-### 4.4. Execução da Aplicação Spring Boot
-
-Após configurar o banco de dados, você pode iniciar a aplicação Spring Boot. Navegue até a raiz do projeto e execute:
+### 2. Subir a infraestrutura
 
 ```bash
-mvn spring-boot:run
+docker compose up -d
 ```
 
-Alternativamente, você pode construir o projeto e executar o JAR gerado:
+Serviços:
+
+| Serviço | Container | Portas | Credenciais |
+|---|---|---|---|
+| PostgreSQL | `vagas-db` | `5432` | `postgres` / `postgres` — DB `gestao_vagas` |
+| MongoDB | `vagas-logs-db` | `27017` | `mongo` / `mongo` — DB `gestao_vagas_logs` |
+| RabbitMQ | `vagas-rabbitmq` | `5672`, UI `15672` | `guest` / `guest` |
+| Prometheus | `prometheus` | `9090` | — |
+| Grafana | `grafana` | `3000` | admin padrão do Grafana |
+
+### 3. Rodar a aplicação
+
+Com o script (carrega o `.env` automaticamente):
 
 ```bash
-mvn clean install
-java -jar target/gestao_vagas-0.0.1-SNAPSHOT.jar
+./start.sh
 ```
 
-### 4.5. Execução dos Testes
-
-Os use cases possuem testes unitários com JUnit 5 e Mockito. Eles não dependem de PostgreSQL, RabbitMQ nem SMTP — repositórios e producers são mockados.
-
-**Rodar apenas os testes dos use cases:**
+Ou manualmente:
 
 ```bash
-./mvnw -Dtest='**/useCases/**Test' test
+set -a && source .env && set +a
+./mvnw spring-boot:run
 ```
 
-**Rodar todos os testes do projeto:**
+A API sobe em **http://localhost:8080**.
+
+## URLs úteis
+
+| Recurso | URL |
+|---|---|
+| API | http://localhost:8080 |
+| Swagger UI | http://localhost:8080/swagger-ui.html |
+| OpenAPI JSON | http://localhost:8080/v3/api-docs |
+| Health | http://localhost:8080/actuator/health |
+| Prometheus (app) | http://localhost:8080/actuator/prometheus |
+| RabbitMQ Management | http://localhost:15672 |
+| Prometheus UI | http://localhost:9090 |
+| Grafana | http://localhost:3000 |
+
+## API — endpoints principais
+
+Rotas públicas: cadastro e autenticação. Demais rotas exigem `Authorization: Bearer <token>`.
+
+### Candidato
+
+| Método | Path | Auth | Descrição |
+|---|---|---|---|
+| `POST` | `/candidate/` | pública | Cadastro |
+| `POST` | `/candidate/auth` | pública | Login → JWT (role `CANDIDATE`, ~10 min) |
+| `GET` | `/candidate/` | `ROLE_CANDIDATE` | Perfil |
+| `PUT` | `/candidate/{id}` | `ROLE_CANDIDATE` | Atualizar |
+| `DELETE` | `/candidate/` | `ROLE_CANDIDATE` | Excluir conta |
+| `GET` | `/candidate/job?filter=` | `ROLE_CANDIDATE` | Listar vagas |
+| `POST` | `/candidate/job/apply` | `ROLE_CANDIDATE` | Candidatar-se (body: UUID da vaga) |
+
+### Empresa
+
+| Método | Path | Auth | Descrição |
+|---|---|---|---|
+| `POST` | `/company/` | pública | Cadastro |
+| `POST` | `/company/auth` | pública | Login → JWT (role `COMPANY`, ~2 h) |
+| `GET` | `/company/{id}` | autenticado | Buscar empresa |
+| `PUT` | `/company/{id}` | autenticado | Atualizar |
+| `DELETE` | `/company/{id}` | autenticado | Excluir |
+| `POST` | `/company/job/` | `ROLE_COMPANY` | Criar vaga |
+
+## Segurança
+
+- Senhas com BCrypt
+- Dois JWTs distintos (secrets separados para candidato e empresa)
+- Filtros `SecurityCandidateFilter` (`/candidate*`) e `SecurityCompanyFilter` (`/company*`)
+- Subject do token = ID do usuário; claim `roles` → `ROLE_CANDIDATE` / `ROLE_COMPANY`
+
+## Fluxo de e-mail (RabbitMQ)
+
+Ao candidatar-se (`ApplyJobCandidateUseCase`):
+
+1. Persiste a candidatura no PostgreSQL
+2. Publica `ApplyJobEmailMessageDTO` na exchange `application-email-exchange` (RK `email`)
+3. Fila `application-email-queue` → `ApplyJobEmailConsumer`
+4. Consumer envia 2 e-mails via SMTP (candidato e empresa)
+
+Em falha: até **3 retries** com backoff; depois a mensagem vai para a DLQ `application-email-queue.dlq` (DLX `application-email-dlx`, RK `email.dlq`).
+
+Mensagens na DLQ **não voltam sozinhas** — republicar manualmente pela UI do RabbitMQ ou via reprocessamento no código.
+
+## Persistência
+
+- **PostgreSQL**: candidatos, empresas, vagas, candidaturas (`apply_jobs`)
+- **MongoDB**: collection `access_logs` (filtro HTTP; desligável com `HTTP_ACCESS_LOGS_ENABLED=false`)
+
+## Testes
+
+Testes de use case são unitários (JUnit 5 + Mockito). Não precisam de PostgreSQL, RabbitMQ nem SMTP.
 
 ```bash
+# Todos os testes
 ./mvnw test
-```
 
-**Rodar um use case específico:**
+# Apenas use cases
+./mvnw -Dtest='**/useCases/**Test' test
 
-```bash
+# Um teste específico
 ./mvnw -Dtest=ApplyJobCandidateUseCaseTest test
 ./mvnw -Dtest=CreateCompanyUseCaseTest test
 ```
 
-**Pelo IDE:** clique com o botão direito na pasta `useCases` em `src/test/java` e selecione **Run Tests**.
+No IDE: botão direito na pasta `useCases` em `src/test/java` → **Run Tests**.
 
-## 5. Comandos Essenciais
+## Comandos essenciais
 
 | Comando | Descrição |
-| :------ | :-------- |
-| `docker-compose up -d` | Inicia o contêiner PostgreSQL em segundo plano. |
-| `docker-compose down` | Para e remove os contêineres definidos no `docker-compose.yml`. |
-| `docker run -d --name sonarqube ...` | Inicia o servidor SonarQube em um contêiner Docker. |
-| `mvn clean verify sonar:sonar ...` | Executa a análise de qualidade de código com SonarQube. |
-| `mvn spring-boot:run` | Inicia a aplicação Spring Boot no modo de desenvolvimento. |
-| `mvn clean install` | Compila o projeto, executa testes e empacota a aplicação em um JAR. |
-| `java -jar target/gestao_vagas-0.0.1-SNAPSHOT.jar` | Executa a aplicação Spring Boot a partir do arquivo JAR gerado. |
-| `./mvnw test` | Executa todos os testes do projeto. |
-| `./mvnw -Dtest='**/useCases/**Test' test` | Executa apenas os testes dos use cases. |
-| `./mvnw -Dtest=NomeDoTeste test` | Executa um teste específico (ex.: `ApplyJobCandidateUseCaseTest`). |
+|---|---|
+| `docker compose up -d` | Sobe Postgres, MongoDB, RabbitMQ, Prometheus e Grafana |
+| `docker compose down` | Para e remove os containers |
+| `cp .env.example .env` | Cria o arquivo de variáveis de ambiente |
+| `./start.sh` | Carrega `.env` e sobe a API |
+| `./mvnw spring-boot:run` | Sobe a API (env já exportado) |
+| `./mvnw test` | Roda todos os testes |
+| `./mvnw -Dtest='**/useCases/**Test' test` | Roda testes dos use cases |
+| `./mvnw clean package` | Gera o JAR em `target/` |
+| `java -jar target/gestao_vagas-0.0.1-SNAPSHOT.jar` | Executa o JAR |
 
-## 6. Conclusão
+## SonarQube (opcional)
 
-Esta documentação visa facilitar a compreensão e o setup do projeto `gestao_vagas`. Para mais detalhes sobre a implementação, consulte o código-fonte nos respectivos módulos.
+```bash
+docker run -d --name sonarqube \
+  -e SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true \
+  -p 9000:9000 sonarqube:9.9.0-community
+```
 
----
+```bash
+./mvnw clean verify sonar:sonar \
+  -Dsonar.projectKey=gestao_vagas \
+  -Dsonar.host.url=http://localhost:9000 \
+  -Dsonar.login=<SEU_TOKEN>
+```
+
+## Deploy
+
+Há um workflow em `.github/workflows/prod.yml` que builda a imagem Docker (`elfabrica/gestao_vagas`) e faz deploy na porta `8080`. O `Dockerfile` é multi-stage e expõe a porta 8080.
