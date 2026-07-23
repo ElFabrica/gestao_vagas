@@ -1,19 +1,14 @@
 #!/bin/bash
+set -euo pipefail
 
-export DATABASE_URL="jdbc:postgresql://localhost:5432/gestao_vagas"
-export DATABASE_USERNAME="postgres"
-export DATABASE_PASSWORD="postgres"
-export MONGODB_HOST="localhost"
-export MONGODB_PORT="27017"
-export MONGODB_DATABASE="gestao_vagas_logs"
-export MONGODB_USERNAME="mongo"
-export MONGODB_PASSWORD="mongo"
-export MONGODB_AUTHENTICATION_DATABASE="admin"
-export DATABASE_URL=jdbc:postgresql://localhost:5432/gestao_vagas
-export DATABASE_USERNAME=postgres
-export DATABASE_PASSWORD=postgres
-export MAIL_USERNAME=seuemail@gmail.com
-export MAIL_PASSWORD="uma senha gerada no https://myaccount.google.com/apppasswords"
+if [ ! -f .env ]; then
+  echo "Arquivo .env nao encontrado. Copie .env.example para .env e preencha os valores."
+  exit 1
+fi
 
+set -a
+# shellcheck disable=SC1091
+source .env
+set +a
 
 ./mvnw spring-boot:run

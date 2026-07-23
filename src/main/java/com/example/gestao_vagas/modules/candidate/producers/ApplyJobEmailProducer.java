@@ -17,6 +17,6 @@ public class ApplyJobEmailProducer {
     }
 
     public void send(ApplyJobEmailMessageDTO message) {
-        rabbitTemplate.convertAndSend(emailQueue, message);
+        rabbitTemplate.convertAndSend("application-email-exchange", "email", message);
     }
 }

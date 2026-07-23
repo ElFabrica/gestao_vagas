@@ -1,5 +1,6 @@
 package com.example.gestao_vagas.modules.candidate.useCases;
 
+import com.example.gestao_vagas.exceptions.CandidateAppliedException;
 import com.example.gestao_vagas.exceptions.CompanyNotFoundException;
 import com.example.gestao_vagas.exceptions.UserNotFoundException;
 import com.example.gestao_vagas.modules.candidate.CandidateRepository;
@@ -30,11 +31,15 @@ public class ApplyJobCandidateUseCase {
 
     public ApplyJobEntity execute(UUID idCandidate, UUID idJob) {
 
+        var alreadyExists = this.applyJobRepository.findByJobIdAndCandidateId(idJob, idCandidate);
+        if (alreadyExists.isPresent()) {
+            throw new CandidateAppliedException();
+        }
+
         var candidate = this.candidateRepository.findById(idCandidate)
                 .orElseThrow(() -> {
                     throw new UserNotFoundException();
                 });
-
 
         var job = this.jobRepository.findById(idJob)
                 .orElseThrow(() -> {

@@ -19,7 +19,8 @@ target/
 *.iml
 *.ipr
 .env
-.start.sh
+.env.local
+!.env.example
 
 ### NetBeans ###
 /nbproject/private/
