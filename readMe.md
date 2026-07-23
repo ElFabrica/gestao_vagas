@@ -112,6 +112,31 @@ mvn clean install
 java -jar target/gestao_vagas-0.0.1-SNAPSHOT.jar
 ```
 
+### 4.5. Execução dos Testes
+
+Os use cases possuem testes unitários com JUnit 5 e Mockito. Eles não dependem de PostgreSQL, RabbitMQ nem SMTP — repositórios e producers são mockados.
+
+**Rodar apenas os testes dos use cases:**
+
+```bash
+./mvnw -Dtest='**/useCases/**Test' test
+```
+
+**Rodar todos os testes do projeto:**
+
+```bash
+./mvnw test
+```
+
+**Rodar um use case específico:**
+
+```bash
+./mvnw -Dtest=ApplyJobCandidateUseCaseTest test
+./mvnw -Dtest=CreateCompanyUseCaseTest test
+```
+
+**Pelo IDE:** clique com o botão direito na pasta `useCases` em `src/test/java` e selecione **Run Tests**.
+
 ## 5. Comandos Essenciais
 
 | Comando | Descrição |
@@ -123,6 +148,9 @@ java -jar target/gestao_vagas-0.0.1-SNAPSHOT.jar
 | `mvn spring-boot:run` | Inicia a aplicação Spring Boot no modo de desenvolvimento. |
 | `mvn clean install` | Compila o projeto, executa testes e empacota a aplicação em um JAR. |
 | `java -jar target/gestao_vagas-0.0.1-SNAPSHOT.jar` | Executa a aplicação Spring Boot a partir do arquivo JAR gerado. |
+| `./mvnw test` | Executa todos os testes do projeto. |
+| `./mvnw -Dtest='**/useCases/**Test' test` | Executa apenas os testes dos use cases. |
+| `./mvnw -Dtest=NomeDoTeste test` | Executa um teste específico (ex.: `ApplyJobCandidateUseCaseTest`). |
 
 ## 6. Conclusão
 
