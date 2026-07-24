@@ -5,7 +5,10 @@ import com.example.gestao_vagas.modules.candidate.dto.ProfileCandidateResponseDT
 import com.example.gestao_vagas.modules.candidate.dto.UpdateCandidateDTO;
 import com.example.gestao_vagas.modules.candidate.useCases.*;
 import com.example.gestao_vagas.modules.company.entities.JobEntity;
+import com.example.gestao_vagas.modules.upload.dto.UploadResponseDTO;
+import com.example.gestao_vagas.modules.upload.useCases.UploadCurriculumUseCase;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -16,16 +19,18 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/candidate")
-@Tag(name = "Candidato", description = "Endpoints responsáveis pelo gerenciamento de candidatos, perfil, vagas e candidaturas.")
+@Tag(name = "Candidato", description = "Gerenciamento de candidatos: cadastro, perfil, currículo (R2), vagas e candidaturas.")
 public class CandidateController {
 
     @Autowired
@@ -45,6 +50,9 @@ public class CandidateController {
 
     @Autowired
     private DeleteCandidateUseCase deleteCandidateUseCase;
+
+    @Autowired
+    private UploadCurriculumUseCase uploadCurriculumUseCase;
 
     @PostMapping("/")
     @Operation(
@@ -101,7 +109,11 @@ public class CandidateController {
     @SecurityRequirement(name = "jwt_auth")
     @Operation(
             summary = "Consultar perfil",
-            description = "Retorna as informações do candidato autenticado."
+            description = """
+                    Retorna as informações do candidato autenticado.
+                    O campo candidateUrl contém a URL pré-assinada do currículo ativo (válida por 15 minutos),
+                    ou null quando não há currículo, o registro de upload não existe ou o arquivo foi removido do R2.
+                    """
     )
     @ApiResponses({
             @ApiResponse(
@@ -161,7 +173,7 @@ public class CandidateController {
     @SecurityRequirement(name = "jwt_auth")
     @Operation(
             summary = "Candidatar-se a uma vaga",
-            description = "Permite que o candidato autenticado realize a inscrição em uma vaga."
+            description = "Permite que o candidato autenticado realize a inscrição em uma vaga. O body deve ser o UUID da vaga (JSON string)."
     )
     @ApiResponses({
             @ApiResponse(
@@ -170,7 +182,7 @@ public class CandidateController {
             ),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Erro ao realizar a candidatura."
+                    description = "Erro ao realizar a candidatura (vaga inexistente, já inscrito, etc.)."
             ),
             @ApiResponse(
                     responseCode = "401",
@@ -179,6 +191,11 @@ public class CandidateController {
     })
     public ResponseEntity<Object> applyJob(
             HttpServletRequest request,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "UUID da vaga",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = UUID.class, example = "3fa85f64-5717-4562-b3fc-2c963f66afa6"))
+            )
             @RequestBody UUID jobId) {
 
         var candidateId = request.getAttribute("candidate_id");
@@ -224,6 +241,53 @@ public class CandidateController {
             this.deleteCandidateUseCase.delete(UUID.fromString(candidateId.toString()));
             return ResponseEntity.status(203).body("");
 
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping(value = "/curriculum", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('CANDIDATE')")
+    @SecurityRequirement(name = "jwt_auth")
+    @Operation(
+            summary = "Upload de currículo",
+            description = """
+                    Envia o currículo do candidato autenticado em PDF (máximo 5 MB).
+                    O arquivo é armazenado no Cloudflare R2 e o curriculumId ativo do candidato é atualizado.
+                    Um novo upload substitui o currículo ativo anterior.
+                    """
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Currículo enviado com sucesso.",
+                    content = @Content(schema = @Schema(implementation = UploadResponseDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Arquivo inválido (vazio, maior que 5 MB ou não PDF) ou candidato não encontrado."
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Token JWT inválido ou expirado."
+            )
+    })
+    public ResponseEntity<Object> uploadCurriculum(
+            HttpServletRequest request,
+            @Parameter(
+                    description = "Arquivo PDF do currículo (campo form-data: file)",
+                    required = true,
+                    content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE)
+            )
+            @RequestParam("file") MultipartFile file
+    ) {
+        try {
+            var candidateId = request.getAttribute("candidate_id");
+            var result = this.uploadCurriculumUseCase.execute(
+                    UUID.fromString(candidateId.toString()),
+                    file
+            );
+            return ResponseEntity.status(201).body(result);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

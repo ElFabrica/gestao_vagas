@@ -19,26 +19,33 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/company")
-@Tag(name="Company", description = "Informações da company")
+@Tag(name = "Autenticar empresa", description = "Login da empresa e emissão de JWT (role COMPANY).")
 public class AuthCompanyController {
 
     @Autowired
     private AuthCompanyUseCase authCompanyUseCase;
 
     @PostMapping("/auth")
-    @Operation(summary = "Login na empresa", description = "Essa função é responsável por fazer login na empresa")
+    @Operation(
+            summary = "Login na empresa",
+            description = "Autentica a empresa com username e senha e retorna o token JWT."
+    )
     @ApiResponses({
-            @ApiResponse(responseCode= "200", content = {
-                    @Content(schema = @Schema(implementation = AuthCompanyResponseDTO.class))
-            }),
-            @ApiResponse(responseCode = "400", description = "Username ou senhas invalidas")
-            })
-
-    public ResponseEntity<Object> create(@RequestBody AuthCompanyDTO authCompanyDTO){
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Autenticação realizada com sucesso.",
+                    content = @Content(schema = @Schema(implementation = AuthCompanyResponseDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Username ou senha inválidos."
+            )
+    })
+    public ResponseEntity<Object> create(@RequestBody AuthCompanyDTO authCompanyDTO) {
         try {
-        var result = this.authCompanyUseCase.execute(authCompanyDTO);
-        return ResponseEntity.ok().body(result);
-        }catch (Exception e){
+            var result = this.authCompanyUseCase.execute(authCompanyDTO);
+            return ResponseEntity.ok().body(result);
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }

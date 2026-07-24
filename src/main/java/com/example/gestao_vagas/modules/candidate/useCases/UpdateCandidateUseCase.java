@@ -20,7 +20,6 @@ public class UpdateCandidateUseCase {
         candidate.setName(updateCandidateDTO.name());
         candidate.setUsername(updateCandidateDTO.username());
         candidate.setEmail(updateCandidateDTO.email());
-        candidate.setCurriculum(candidate.getCurriculum());
         candidate.setDescription(candidate.getDescription());
 
         this.candidateRepository.save(candidate);

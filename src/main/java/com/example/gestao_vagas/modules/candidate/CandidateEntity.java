@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
-@Entity(name="candidate")
+@Entity(name = "candidate")
 public class CandidateEntity {
 
     @Id
@@ -41,7 +41,7 @@ public class CandidateEntity {
     @Schema(example = "Sou dev full stack com sonho em trabalhar na linguagem de melhor salário do mercado. Java")
     private String description;
     @Schema(example = "Sênior em Typescript, Junior em java")
-    private String curriculum;
+    private UUID curriculumId;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

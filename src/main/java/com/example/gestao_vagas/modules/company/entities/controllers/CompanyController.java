@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/company")
-@Tag(name = "Company", description = "Informações da company")
+@Tag(name = "Empresa", description = "Cadastro e gerenciamento de empresas.")
 public class CompanyController {
 
     @Autowired
@@ -37,19 +38,24 @@ public class CompanyController {
     private DeleteCompanyUseCase deleteCompanyUseCase;
 
     @GetMapping("/{id}")
+    @SecurityRequirement(name = "jwt_auth")
     @Operation(
             summary = "Buscar empresa",
-            description = "Busca uma empresa pelo seu ID."
+            description = "Retorna os dados de uma empresa pelo ID."
     )
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Empresa encontrada",
+                    description = "Empresa encontrada.",
                     content = @Content(schema = @Schema(implementation = CompanyEntity.class))
             ),
             @ApiResponse(
                     responseCode = "400",
-                    description = "ID inválido ou empresa não encontrada"
+                    description = "ID inválido ou empresa não encontrada."
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Token JWT inválido ou expirado."
             )
     })
     public ResponseEntity<Object> get(@PathVariable String id) {
@@ -59,16 +65,23 @@ public class CompanyController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
-
     }
 
     @PostMapping("/")
-    @Operation(summary = "Cadastro de empresa", description = "Essa função é responsável por cadastrar uma empresa")
+    @Operation(
+            summary = "Cadastrar empresa",
+            description = "Realiza o cadastro de uma nova empresa no sistema."
+    )
     @ApiResponses({
-            @ApiResponse(responseCode = "201", content = {
-                    @Content(schema = @Schema(implementation = CompanyEntity.class))
-            }),
-            @ApiResponse(responseCode = "400", description = "Usuário já existe")
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Empresa cadastrada com sucesso.",
+                    content = @Content(schema = @Schema(implementation = CompanyEntity.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Dados inválidos ou usuário já cadastrado."
+            )
     })
     public ResponseEntity<Object> create(@Valid @RequestBody CompanyEntity companyEntity) {
         try {
@@ -80,6 +93,7 @@ public class CompanyController {
     }
 
     @PutMapping("/{id}")
+    @SecurityRequirement(name = "jwt_auth")
     @Operation(
             summary = "Atualizar empresa",
             description = "Atualiza os dados de uma empresa existente."
@@ -87,15 +101,21 @@ public class CompanyController {
     @ApiResponses({
             @ApiResponse(
                     responseCode = "203",
-                    description = "Empresa atualizada com sucesso",
+                    description = "Empresa atualizada com sucesso.",
                     content = @Content(schema = @Schema(implementation = CompanyEntity.class))
             ),
             @ApiResponse(
                     responseCode = "400",
-                    description = "ID inválido ou dados inválidos"
+                    description = "ID inválido ou dados inválidos."
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Token JWT inválido ou expirado."
             )
     })
-    public ResponseEntity<Object> update(@PathVariable String id, @Valid @RequestBody UpdateCompanyDTO updateDTO) {
+    public ResponseEntity<Object> update(
+            @PathVariable String id,
+            @Valid @RequestBody UpdateCompanyDTO updateDTO) {
         try {
             var result = updateCompanyUseCase.execute(UUID.fromString(id), updateDTO);
             return ResponseEntity.status(203).body(result);
@@ -105,18 +125,23 @@ public class CompanyController {
     }
 
     @DeleteMapping("/{id}")
+    @SecurityRequirement(name = "jwt_auth")
     @Operation(
             summary = "Excluir empresa",
-            description = "Remove uma empresa do sistema pelo ID."
+            description = "Remove permanentemente uma empresa do sistema pelo ID."
     )
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Empresa removida com sucesso"
+                    description = "Empresa removida com sucesso."
             ),
             @ApiResponse(
                     responseCode = "400",
-                    description = "ID inválido ou empresa não encontrada"
+                    description = "ID inválido ou empresa não encontrada."
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Token JWT inválido ou expirado."
             )
     })
     public ResponseEntity<Object> delete(@PathVariable String id) {
@@ -128,4 +153,3 @@ public class CompanyController {
         }
     }
 }
-
