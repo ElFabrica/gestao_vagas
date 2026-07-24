@@ -1,6 +1,7 @@
 package com.example.gestao_vagas.modules.candidate.controllers;
 
-import com.example.gestao_vagas.modules.candidate.CandidateEntity;
+import com.example.gestao_vagas.modules.candidate.dto.CreateCandidateDTO;
+import com.example.gestao_vagas.modules.candidate.dto.CreateCandidateResponseDTO;
 import com.example.gestao_vagas.modules.candidate.dto.ProfileCandidateResponseDTO;
 import com.example.gestao_vagas.modules.candidate.dto.UpdateCandidateDTO;
 import com.example.gestao_vagas.modules.candidate.useCases.*;
@@ -63,7 +64,7 @@ public class CandidateController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Candidato cadastrado com sucesso.",
-                    content = @Content(schema = @Schema(implementation = CandidateEntity.class))
+                    content = @Content(schema = @Schema(implementation = CreateCandidateResponseDTO.class))
             ),
             @ApiResponse(
                     responseCode = "400",
@@ -71,10 +72,10 @@ public class CandidateController {
             )
     })
     public ResponseEntity<Object> create(
-            @Valid @RequestBody CandidateEntity candidateEntity) {
+            @Valid @RequestBody CreateCandidateDTO createCandidateDTO) {
 
         try {
-            var result = this.createCandidateUseCase.execute(candidateEntity);
+            var result = this.createCandidateUseCase.execute(createCandidateDTO);
             return ResponseEntity.ok().body(result);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

@@ -3,9 +3,11 @@ package com.example.gestao_vagas.modules.candidate.useCases;
 import com.example.gestao_vagas.exceptions.CompanyNotFoundException;
 import com.example.gestao_vagas.modules.candidate.CandidateEntity;
 import com.example.gestao_vagas.modules.candidate.CandidateRepository;
+import com.example.gestao_vagas.modules.candidate.dto.CreateCandidateDTO;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -37,16 +39,19 @@ class CreateCandidateUseCaseTest {
     @Test
     @DisplayName("Should not create candidate when username or email already exists")
     void shouldNotCreateWhenUserAlreadyExists() {
-        var candidate = new CandidateEntity();
-        candidate.setUsername("elfabrica");
-        candidate.setEmail("teste@email.com");
-        candidate.setPassword("senha12345");
+        var dto = new CreateCandidateDTO(
+                "Arthur",
+                "elfabrica",
+                "teste@email.com",
+                "senha12345",
+                "Dev Java"
+        );
 
         when(candidateRepository.findByUsernameOrEmail("elfabrica", "teste@email.com"))
                 .thenReturn(Optional.of(new CandidateEntity()));
 
         assertThrows(CompanyNotFoundException.UserFoundException.class,
-                () -> createCandidateUseCase.execute(candidate));
+                () -> createCandidateUseCase.execute(dto));
 
         verify(candidateRepository, never()).save(any());
         verify(passwordEncoder, never()).encode(anyString());
@@ -55,11 +60,13 @@ class CreateCandidateUseCaseTest {
     @Test
     @DisplayName("Should create candidate encoding the password")
     void shouldCreateCandidateSuccessfully() {
-        var candidate = new CandidateEntity();
-        candidate.setUsername("elfabrica");
-        candidate.setEmail("teste@email.com");
-        candidate.setPassword("senha12345");
-        candidate.setName("Arthur");
+        var dto = new CreateCandidateDTO(
+                "Arthur",
+                "elfabrica",
+                "teste@email.com",
+                "senha12345",
+                "Dev Java"
+        );
 
         var saved = new CandidateEntity();
         saved.setId(UUID.randomUUID());
@@ -67,17 +74,22 @@ class CreateCandidateUseCaseTest {
         saved.setEmail("teste@email.com");
         saved.setPassword("encoded-password");
         saved.setName("Arthur");
+        saved.setDescription("Dev Java");
 
         when(candidateRepository.findByUsernameOrEmail("elfabrica", "teste@email.com"))
                 .thenReturn(Optional.empty());
         when(passwordEncoder.encode("senha12345")).thenReturn("encoded-password");
         when(candidateRepository.save(any(CandidateEntity.class))).thenReturn(saved);
 
-        var result = createCandidateUseCase.execute(candidate);
+        var result = createCandidateUseCase.execute(dto);
 
-        assertThat(result.getId()).isNotNull();
-        assertThat(result.getPassword()).isEqualTo("encoded-password");
-        assertThat(candidate.getPassword()).isEqualTo("encoded-password");
-        verify(candidateRepository).save(candidate);
+        ArgumentCaptor<CandidateEntity> captor = ArgumentCaptor.forClass(CandidateEntity.class);
+        verify(candidateRepository).save(captor.capture());
+
+        assertThat(captor.getValue().getPassword()).isEqualTo("encoded-password");
+        assertThat(captor.getValue().getId()).isNull();
+        assertThat(result.username()).isEqualTo("elfabrica");
+        assertThat(result.email()).isEqualTo("teste@email.com");
+        assertThat(result.name()).isEqualTo("Arthur");
     }
 }
