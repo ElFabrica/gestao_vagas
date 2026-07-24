@@ -8,9 +8,9 @@ import java.util.UUID;
 public record CreateCandidateResponseDTO(
         @Schema(example = "Arthur Fabricyo")
         String name,
-        @Schema(example = "ElFabrica")
+        @Schema(example = "teste123")
         String username,
-        @Schema(example = "arthur.fabricyo@gmail.com")
+        @Schema(example = "teste@gmail.com")
         String email,
         @Schema(example = "Sou dev full stack")
         String description,

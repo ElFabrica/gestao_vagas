@@ -41,13 +41,13 @@ class CreateCandidateUseCaseTest {
     void shouldNotCreateWhenUserAlreadyExists() {
         var dto = new CreateCandidateDTO(
                 "Arthur",
-                "elfabrica",
-                "teste@email.com",
+                "teste123",
+                "teste@gmail.com",
                 "senha12345",
                 "Dev Java"
         );
 
-        when(candidateRepository.findByUsernameOrEmail("elfabrica", "teste@email.com"))
+        when(candidateRepository.findByUsernameOrEmail("teste123", "teste@gmail.com"))
                 .thenReturn(Optional.of(new CandidateEntity()));
 
         assertThrows(CompanyNotFoundException.UserFoundException.class,
@@ -62,21 +62,21 @@ class CreateCandidateUseCaseTest {
     void shouldCreateCandidateSuccessfully() {
         var dto = new CreateCandidateDTO(
                 "Arthur",
-                "elfabrica",
-                "teste@email.com",
+                "teste123",
+                "teste@gmail.com",
                 "senha12345",
                 "Dev Java"
         );
 
         var saved = new CandidateEntity();
         saved.setId(UUID.randomUUID());
-        saved.setUsername("elfabrica");
-        saved.setEmail("teste@email.com");
+        saved.setUsername("teste123");
+        saved.setEmail("teste@gmail.com");
         saved.setPassword("encoded-password");
         saved.setName("Arthur");
         saved.setDescription("Dev Java");
 
-        when(candidateRepository.findByUsernameOrEmail("elfabrica", "teste@email.com"))
+        when(candidateRepository.findByUsernameOrEmail("teste123", "teste@gmail.com"))
                 .thenReturn(Optional.empty());
         when(passwordEncoder.encode("senha12345")).thenReturn("encoded-password");
         when(candidateRepository.save(any(CandidateEntity.class))).thenReturn(saved);
@@ -88,8 +88,8 @@ class CreateCandidateUseCaseTest {
 
         assertThat(captor.getValue().getPassword()).isEqualTo("encoded-password");
         assertThat(captor.getValue().getId()).isNull();
-        assertThat(result.username()).isEqualTo("elfabrica");
-        assertThat(result.email()).isEqualTo("teste@email.com");
+        assertThat(result.username()).isEqualTo("teste123");
+        assertThat(result.email()).isEqualTo("teste@gmail.com");
         assertThat(result.name()).isEqualTo("Arthur");
     }
 }

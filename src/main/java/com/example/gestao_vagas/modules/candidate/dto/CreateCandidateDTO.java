@@ -11,13 +11,13 @@ public record CreateCandidateDTO(
         String name,
         @NotBlank
         @Pattern(regexp = "\\S+", message = "O campo [username] não deve conter espaço")
-        @Schema(example = "ElFabrica", description = "username do usuário")
+        @Schema(example = "teste123", description = "username do usuário")
         String username,
         @Email(message = "O campo [email] deve conter um e-mail valido")
-        @Schema(example = "arthur.fabricyo@gmail.com")
+        @Schema(example = "teste@gmail.com")
         String email,
         @Length(min = 10, max = 100)
-        @Schema(example = "Fala12345@", minLength = 10, maxLength = 100)
+        @Schema(example = "Teste12345@", minLength = 10, maxLength = 100)
         String password,
         @Schema(example = "Sou dev full stack")
         String description
