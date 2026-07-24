@@ -18,7 +18,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class uploadEntity {
+public class UploadEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;

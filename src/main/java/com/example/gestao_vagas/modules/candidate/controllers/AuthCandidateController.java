@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/candidate")
-@Tag(name="Autenticar candidato", description = "Autenticação do usuário de tipo candidato")
+@Tag(name = "Autenticar candidato", description = "Login do candidato e emissão de JWT (role CANDIDATE).")
 public class AuthCandidateController {
 
     private final AuthCandidateUseCase authCandidateUseCase;
@@ -28,19 +28,27 @@ public class AuthCandidateController {
     }
 
     @PostMapping("/auth")
-    @Operation(summary = "Login de candidato",
-            description = "Essa função é responsável por realizar login do candidato.")
+    @Operation(
+            summary = "Login de candidato",
+            description = "Autentica o candidato com username/e-mail e senha e retorna o token JWT."
+    )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", content = {
-                    @Content(schema = @Schema(implementation = AuthCandidateResponseDTO.class))}),
-            @ApiResponse(responseCode = "400", description = "Username/passoword incorrect")})
-    public ResponseEntity<Object> auth(@RequestBody AuthCandidateRequestDTO authCandidateRequestDTO){
-        try{
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Autenticação realizada com sucesso.",
+                    content = @Content(schema = @Schema(implementation = AuthCandidateResponseDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Username/e-mail ou senha incorretos."
+            )
+    })
+    public ResponseEntity<Object> auth(@RequestBody AuthCandidateRequestDTO authCandidateRequestDTO) {
+        try {
             var token = this.authCandidateUseCase.execute(authCandidateRequestDTO);
             return ResponseEntity.ok().body(token);
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-
         }
     }
 }

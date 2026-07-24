@@ -62,7 +62,6 @@ class UpdateCandidateUseCaseTest {
         candidate.setUsername("antigo");
         candidate.setEmail("antigo@email.com");
         candidate.setDescription("desc antiga");
-        candidate.setCurriculum("curriculum antigo");
 
         var dto = new UpdateCandidateDTO(
                 "Novo Nome",
@@ -86,6 +85,5 @@ class UpdateCandidateUseCaseTest {
         assertThat(saved.getUsername()).isEqualTo("novo_user");
         assertThat(saved.getEmail()).isEqualTo("novo@email.com");
         assertThat(saved.getDescription()).isEqualTo("desc antiga");
-        assertThat(saved.getCurriculum()).isEqualTo("curriculum antigo");
     }
 }

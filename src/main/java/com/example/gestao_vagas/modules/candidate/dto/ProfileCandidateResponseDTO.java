@@ -23,4 +23,9 @@ public class ProfileCandidateResponseDTO {
     private UUID id;
     @Schema(example = "Maria")
     private String name;
+    @Schema(
+            description = "URL pré-assinada do currículo ativo no R2 (15 min). Null se não houver currículo ou se o arquivo não existir no storage.",
+            example = "https://<account>.r2.cloudflarestorage.com/..."
+    )
+    private String candidateUrl;
 }

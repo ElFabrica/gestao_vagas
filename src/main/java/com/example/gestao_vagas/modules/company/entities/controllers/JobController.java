@@ -4,7 +4,6 @@ import com.example.gestao_vagas.modules.company.entities.JobEntity;
 import com.example.gestao_vagas.modules.company.entities.dto.CreateJobDTO;
 import com.example.gestao_vagas.modules.company.entities.useCases.CreateJobUseCase;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -23,30 +22,42 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
-
 @RestController
 @RequestMapping("/company/job")
-@Tag(name = "Company", description = "Informações da company")
-
+@Tag(name = "Vagas", description = "Criação e gestão de vagas pela empresa.")
 public class JobController {
 
     @Autowired
     private CreateJobUseCase createCompanyUseCase;
 
-    @Tag(name="Vagas", description = "Informações das vagas")
-    @Operation(summary = "Cadastro de vagas",
-            description = "Essa função é responsável por cadastrar as vagas dentro da empresa.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", content = {
-                    @Content(schema = @Schema(implementation = JobEntity.class))})})
-    @SecurityRequirement(name = "jwt_auth")
     @PostMapping("/")
     @PreAuthorize("hasRole('COMPANY')")
-    public ResponseEntity<Object> create(@Valid @RequestBody CreateJobDTO createJobDTO, HttpServletRequest request){
+    @SecurityRequirement(name = "jwt_auth")
+    @Operation(
+            summary = "Cadastrar vaga",
+            description = "Cria uma nova vaga vinculada à empresa autenticada (company_id do JWT)."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Vaga cadastrada com sucesso.",
+                    content = @Content(schema = @Schema(implementation = JobEntity.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Dados inválidos ou empresa não encontrada."
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Token JWT inválido ou expirado."
+            )
+    })
+    public ResponseEntity<Object> create(
+            @Valid @RequestBody CreateJobDTO createJobDTO,
+            HttpServletRequest request) {
         var companyId = request.getAttribute("company_id");
-        //jobEntity.setCompanyId(UUID.fromString(companyId.toString()));
 
-        try{
+        try {
             var jobEntity = JobEntity.builder()
                     .benefits(createJobDTO.getBenefits())
                     .companyId(UUID.fromString(companyId.toString()))
@@ -55,12 +66,8 @@ public class JobController {
                     .build();
             var result = this.createCompanyUseCase.execute(jobEntity);
             return ResponseEntity.ok().body(result);
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
-
-
-
-
     }
 }
